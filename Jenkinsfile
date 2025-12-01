@@ -2,30 +2,26 @@ pipeline {
     agent any 
     
     stages { 
-        stage('SCM Checkout') {
-            steps {
-                retry(3) {
-                    git branch: 'main', url: 'https://github.com/HGSChandeepa/test-node'
-                }
-            }
-        }
         stage('Build Docker Image') {
             steps {  
-                bat 'docker build -t adomicarts/nodeapp-cuban:%BUILD_NUMBER% .'
+                bat 'docker build -t sakilalakmal/nodeapp-cuban:%BUILD_NUMBER% .'
             }
         }
         stage('Login to Docker Hub') {
             steps {
-                withCredentials([string(credentialsId: 'samin-docker', variable: 'samindocker')]) {
+                withCredentials([
+                    string(credentialsId: 'docker-username', variable: 'DOCKER_USERNAME'),
+                    string(credentialsId: 'sakila-dockerhub-pw', variable: 'DOCKER_PASSWORD')
+                ]) {
                     script {
-                        bat "docker login -u adomicarts -p %samindocker%"
+                        bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
                     }
                 }
             }
         }
         stage('Push Image') {
             steps {
-                bat 'docker push adomicarts/nodeapp-cuban:%BUILD_NUMBER%'
+                bat 'docker push sakilalakmal/nodeapp-cuban:%BUILD_NUMBER%'
             }
         }
     }
